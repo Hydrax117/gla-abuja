@@ -23,6 +23,11 @@ export default function RootLayout() {
           name='register/[eventId]'
           options={{ headerShown: true, title: 'Register for Event' }}
         />
+        {/* Kids section */}
+        <Stack.Screen name='kids/index' />
+        <Stack.Screen name='kids/devotional' />
+        <Stack.Screen name='kids/animation' />
+        <Stack.Screen name='kids/games' />
         <Stack.Screen name='+not-found' />
       </Stack>
     </QueryClientProvider>
