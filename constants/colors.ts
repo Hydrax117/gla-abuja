@@ -1,39 +1,30 @@
 /**
- * GLA Abuja brand colors.
- * Adjust primary/secondary to match official brand guidelines.
+ * GLA Abuja — centralized color tokens.
+ * All colors used in the app must reference this file.
+ * Never hardcode hex values in components or styles.
  */
-export const COLORS = {
+export const colors = {
+  // Backgrounds
+  background: '#0B0B0B',
+  surface: '#121212',
+  surfaceElevated: '#181818',
+
   // Brand
-  primary: '#1A5EAB',
-  primaryLight: '#4A8FDB',
-  primaryDark: '#0D3D7A',
-
-  secondary: '#F5A623',
-  secondaryLight: '#FFC85A',
-  secondaryDark: '#C47D00',
-
-  // Semantic
-  success: '#27AE60',
-  warning: '#F39C12',
-  error: '#E74C3C',
-  info: '#2980B9',
-
-  // Neutral
-  background: '#F7F9FC',
-  surface: '#FFFFFF',
-  border: '#E1E8F0',
-  divider: '#EEF2F7',
+  gold: '#D4AF62',
+  goldLight: '#E2C477',
 
   // Text
-  text: {
-    primary: '#1A2332',
-    secondary: '#4A5568',
-    muted: '#A0AEC0',
-    inverse: '#FFFFFF',
-  },
+  white: '#FFFFFF',
+  text: '#E8E8E8',
+  muted: '#9A9A9A',
 
-  // Transparent
-  overlay: 'rgba(0, 0, 0, 0.5)',
+  // Structure
+  border: '#292929',
+
+  // Semantic
+  success: '#4CAF50',
+  error: '#E05252',
+  warning: '#E0A84F',
 } as const;
 
-export type ColorKey = keyof typeof COLORS;
+export type ColorToken = keyof typeof colors;

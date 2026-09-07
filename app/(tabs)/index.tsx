@@ -1,35 +1,66 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { COLORS } from '@/constants/colors';
-import { SPACING } from '@/constants/spacing';
-import { TYPOGRAPHY } from '@/constants/typography';
+import { spacing } from '@/constants/spacing';
+import { Badge, Button, Divider, Heading, Screen, Text, Title } from '@/components/ui';
 
 export default function HomeScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome to GLA Abuja</Text>
-      <Text style={styles.subtitle}>Guiding Light Assembly</Text>
-    </View>
+    <Screen scroll>
+      <View style={styles.hero}>
+        <Badge variant='gold'>Live Every Sunday</Badge>
+        <Heading style={styles.heroHeading}>Guiding Light{'\n'}Assembly</Heading>
+        <Text variant='body' color='muted' style={styles.heroSub}>
+          Abuja, Nigeria
+        </Text>
+      </View>
+
+      <Divider spacing='lg' />
+
+      <View style={styles.section}>
+        <Title>Upcoming Events</Title>
+        <Text variant='caption' color='muted' style={styles.sectionSub}>
+          Events will appear here
+        </Text>
+      </View>
+
+      <Divider spacing='lg' />
+
+      <View style={styles.section}>
+        <Title>Recent Sermons</Title>
+        <Text variant='caption' color='muted' style={styles.sectionSub}>
+          Sermons will appear here
+        </Text>
+      </View>
+
+      <Divider spacing='lg' />
+
+      <Button fullWidth>Watch Live</Button>
+      <View style={styles.gap} />
+      <Button variant='secondary' fullWidth>Browse Events</Button>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACING.lg,
-    backgroundColor: COLORS.background,
+  hero: {
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.lg,
+    gap: spacing.sm,
   },
-  title: {
-    ...TYPOGRAPHY.heading1,
-    color: COLORS.text.primary,
-    textAlign: 'center',
+  heroHeading: {
+    marginTop: spacing.xs,
   },
-  subtitle: {
-    ...TYPOGRAPHY.body,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.sm,
-    textAlign: 'center',
+  heroSub: {
+    marginTop: spacing.xs,
+  },
+  section: {
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  sectionSub: {
+    marginTop: spacing.xs,
+  },
+  gap: {
+    height: spacing.sm,
   },
 });
