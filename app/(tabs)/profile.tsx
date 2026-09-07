@@ -16,6 +16,7 @@ import { colors } from '@/constants/colors';
 import { radius, spacing } from '@/constants/spacing';
 import { typography } from '@/constants/typography';
 import { Divider, Text } from '@/components/ui';
+import { useLayout } from '@/utils/responsive';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -30,14 +31,13 @@ interface MenuItem {
 }
 
 // ---------------------------------------------------------------------------
-// Placeholder user — replace with useCurrentUser() hook once auth is wired
+// Data
 // ---------------------------------------------------------------------------
 
 const MOCK_USER = {
   name: 'Guest User',
   church: 'GLA Abuja',
   avatarUri: null as string | null,
-  // Replace with: avatarUri: user.avatarUrl
   coverUri: 'https://picsum.photos/seed/gla-profile/800/400',
 };
 
@@ -47,31 +47,66 @@ const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function ProfileHeader() {
+function ProfileHeader({
+  coverHeight,
+  avatarSize,
+}: {
+  coverHeight: number;
+  avatarSize: number;
+}) {
+  const ringSize = avatarSize + 6;
+
   return (
-    <View style={styles.headerContainer}>
+    <View style={{ height: coverHeight }}>
       <ImageBackground
         source={{ uri: MOCK_USER.coverUri }}
         style={styles.cover}
         resizeMode='cover'
       >
-        {/* Gradient-style overlay — two-stop illusion using opacity layers */}
         <View style={styles.coverOverlayTop} />
         <View style={styles.coverOverlayBottom} />
 
-        {/* "Profile" title */}
         <Text variant='heading' style={styles.screenTitle}>
           Profile
         </Text>
 
-        {/* Avatar + name block — sits over the lower overlay */}
         <View style={styles.headerContent}>
-          <View style={styles.avatarRing}>
+          {/* Avatar ring — sized from layout */}
+          <View
+            style={[
+              styles.avatarRing,
+              {
+                width: ringSize,
+                height: ringSize,
+                borderRadius: ringSize / 2,
+              },
+            ]}
+          >
             {MOCK_USER.avatarUri ? (
-              <Image source={{ uri: MOCK_USER.avatarUri }} style={styles.avatar} />
+              <Image
+                source={{ uri: MOCK_USER.avatarUri }}
+                style={{
+                  width: avatarSize,
+                  height: avatarSize,
+                  borderRadius: avatarSize / 2,
+                }}
+              />
             ) : (
-              <View style={styles.avatarFallback}>
-                <Ionicons name='person' size={36} color={colors.muted} />
+              <View
+                style={[
+                  styles.avatarFallback,
+                  {
+                    width: avatarSize,
+                    height: avatarSize,
+                    borderRadius: avatarSize / 2,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name='person'
+                  size={Math.round(avatarSize * 0.45)}
+                  color={colors.muted}
+                />
               </View>
             )}
           </View>
@@ -106,10 +141,7 @@ function MenuRow({ item, isLast }: { item: MenuItem; isLast: boolean }) {
           />
           <Text
             variant='body'
-            style={[
-              styles.menuLabel,
-              item.destructive && { color: colors.error },
-            ]}
+            style={[styles.menuLabel, item.destructive && { color: colors.error }]}
           >
             {item.label}
           </Text>
@@ -126,6 +158,8 @@ function MenuRow({ item, isLast }: { item: MenuItem; isLast: boolean }) {
 // ---------------------------------------------------------------------------
 
 export default function ProfileScreen() {
+  const { coverHeight, avatarSize, horizontalPadding } = useLayout();
+
   const menuItems: MenuItem[] = [
     {
       key: 'edit',
@@ -163,7 +197,8 @@ export default function ProfileScreen() {
       icon: 'share-social-outline',
       onPress: () =>
         Share.share({
-          message: 'Join GLA Abuja on our app! Download it here: https://glaabuja.org/app',
+          message:
+            'Join GLA Abuja on our app! Download it here: https://glaabuja.org/app',
         }),
     },
     {
@@ -184,11 +219,14 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Hero header ───────────────────────────── */}
-        <ProfileHeader />
+        <ProfileHeader coverHeight={coverHeight} avatarSize={avatarSize} />
 
-        {/* ── Menu list ─────────────────────────────── */}
-        <View style={styles.menuCard}>
+        <View
+          style={[
+            styles.menuCard,
+            { marginHorizontal: horizontalPadding },
+          ]}
+        >
           {menuItems.map((item, index) => (
             <MenuRow
               key={item.key}
@@ -198,7 +236,6 @@ export default function ProfileScreen() {
           ))}
         </View>
 
-        {/* ── Version footer ────────────────────────── */}
         <Text variant='caption' color='muted' style={styles.version}>
           Version: {APP_VERSION}
         </Text>
@@ -210,9 +247,6 @@ export default function ProfileScreen() {
 // ---------------------------------------------------------------------------
 // Styles
 // ---------------------------------------------------------------------------
-
-const AVATAR_SIZE = 80;
-const COVER_HEIGHT = 280;
 
 const styles = StyleSheet.create({
   safe: {
@@ -228,9 +262,6 @@ const styles = StyleSheet.create({
   },
 
   // ── Header ────────────────────────────────────────
-  headerContainer: {
-    height: COVER_HEIGHT,
-  },
   cover: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -238,8 +269,6 @@ const styles = StyleSheet.create({
   coverOverlayTop: {
     ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0,0,0,0.25)',
-    // Fades from transparent at top to darker at bottom — simulated with a
-    // second layer below
   },
   coverOverlayBottom: {
     position: 'absolute',
@@ -262,23 +291,12 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   avatarRing: {
-    width: AVATAR_SIZE + 6,
-    height: AVATAR_SIZE + 6,
-    borderRadius: (AVATAR_SIZE + 6) / 2,
     borderWidth: 3,
     borderColor: colors.white,
     overflow: 'hidden',
     marginBottom: spacing.sm,
   },
-  avatar: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-  },
   avatarFallback: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
     backgroundColor: colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
@@ -295,7 +313,6 @@ const styles = StyleSheet.create({
 
   // ── Menu ──────────────────────────────────────────
   menuCard: {
-    marginHorizontal: spacing.md,
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,

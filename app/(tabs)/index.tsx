@@ -7,6 +7,7 @@ import { colors } from '@/constants/colors';
 import { radius, spacing } from '@/constants/spacing';
 import { typography } from '@/constants/typography';
 import { Text } from '@/components/ui';
+import { useLayout } from '@/utils/responsive';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,31 +21,30 @@ interface QuickLink {
 }
 
 // ---------------------------------------------------------------------------
-// Data — swap for API-driven data once endpoints are ready
+// Data
 // ---------------------------------------------------------------------------
 
 const FEATURED_EVENT = {
   title: 'Special September Praise & Worship Night',
   date: 'Sun, Sep 7, 2026',
-  // Replace with a real image URI or require() once assets are available
   imageUri: 'https://picsum.photos/seed/gla/800/450',
   eventId: 'featured-sep-2026',
 };
 
 const QUICK_LINKS: QuickLink[] = [
- 
-  { key: 'prayer',   label: 'Prayer',   icon: 'hand-left-outline', route: '/prayer'   },
-  { key: 'gallery',  label: 'gallery',  icon: 'headset-outline',   route: '/sermons'  },
-  { key: 'events',   label: 'Events',   icon: 'calendar-outline',  route: '/events'   },
-  { key: 'kids',     label: 'Kids',     icon: 'happy-outline',     route: '/kids'     },
-  { key: 'live',     label: 'Live',     icon: 'radio-outline',     route: '/live'     },
+  { key: 'prayer',  label: 'Prayer',  icon: 'hand-left-outline', route: '/prayer'  },
+  { key: 'gallery', label: 'Gallery', icon: 'images-outline',    route: '/gallery' },
+  { key: 'events',  label: 'Events',  icon: 'calendar-outline',  route: '/events'  },
+  { key: 'kids',    label: 'Kids',    icon: 'happy-outline',     route: '/kids'    },
+  { key: 'live',    label: 'Live',    icon: 'radio-outline',     route: '/live'    },
+  { key: 'sermons', label: 'Sermons', icon: 'headset-outline',   route: '/sermons' },
 ];
 
 // ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function FeaturedEventCard() {
+function FeaturedEventCard({ aspectRatio }: { aspectRatio: number }) {
   return (
     <Pressable
       onPress={() => router.push(`/event/${FEATURED_EVENT.eventId}`)}
@@ -52,21 +52,18 @@ function FeaturedEventCard() {
     >
       <ImageBackground
         source={{ uri: FEATURED_EVENT.imageUri }}
-        style={styles.heroImage}
+        style={[styles.heroImage, { aspectRatio }]}
         imageStyle={styles.heroImageStyle}
         resizeMode='cover'
       >
-        {/* Dark gradient overlay */}
         <View style={styles.heroOverlay} />
 
-        {/* Play button */}
         <View style={styles.playButtonWrapper}>
           <View style={styles.playButton}>
             <Ionicons name='play' size={22} color={colors.white} />
           </View>
         </View>
 
-        {/* Event info strip at the bottom */}
         <View style={styles.heroInfo}>
           <Text variant='title' color='white' style={styles.heroTitle} numberOfLines={1}>
             {FEATURED_EVENT.title}
@@ -102,7 +99,7 @@ function ActionButton({ label, icon, onPress, variant }: ActionButtonProps) {
         { backgroundColor: bg, opacity: pressed ? 0.8 : 1 },
       ]}
     >
-      <Ionicons name={icon} size={20} color={fg} style={styles.actionBtnIcon} />
+      <Ionicons name={icon} size={20} color={fg} />
       <Text variant='button' style={[styles.actionBtnLabel, { color: fg }]}>
         {label}
       </Text>
@@ -110,16 +107,31 @@ function ActionButton({ label, icon, onPress, variant }: ActionButtonProps) {
   );
 }
 
-function QuickLinkTile({ item }: { item: QuickLink }) {
+function QuickLinkTile({
+  item,
+  tileSize,
+}: {
+  item: QuickLink;
+  tileSize: number;
+}) {
+  const iconBoxSize = tileSize;
   return (
     <Pressable
       onPress={() => router.push(item.route as never)}
-      style={({ pressed }) => [styles.tile, pressed && { opacity: 0.7 }]}
+      style={({ pressed }) => [
+        styles.tile,
+        { width: tileSize, opacity: pressed ? 0.7 : 1 },
+      ]}
     >
-      <View style={styles.tileIcon}>
-        <Ionicons name={item.icon} size={26} color={colors.gold} />
+      <View
+        style={[
+          styles.tileIcon,
+          { width: iconBoxSize, height: iconBoxSize },
+        ]}
+      >
+        <Ionicons name={item.icon} size={Math.round(iconBoxSize * 0.32)} color={colors.gold} />
       </View>
-      <Text variant='caption' color='text' style={styles.tileLabel}>
+      <Text variant='caption' color='text' style={styles.tileLabel} numberOfLines={1}>
         {item.label}
       </Text>
     </Pressable>
@@ -131,19 +143,27 @@ function QuickLinkTile({ item }: { item: QuickLink }) {
 // ---------------------------------------------------------------------------
 
 export default function HomeScreen() {
-  // Split into rows: first 3, then remaining
-  const row1 = QUICK_LINKS.slice(0, 3);
-  const row2 = QUICK_LINKS.slice(3);
+  const layout = useLayout();
+  const { tileColumns, tileSize, heroAspectRatio, horizontalPadding } = layout;
+
+  // Chunk links into rows of tileColumns
+  const rows: QuickLink[][] = [];
+  for (let i = 0; i < QUICK_LINKS.length; i += tileColumns) {
+    rows.push(QUICK_LINKS.slice(i, i + tileColumns));
+  }
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingHorizontal: horizontalPadding },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* ── Featured event ─────────────────────────── */}
-        <FeaturedEventCard />
+        <FeaturedEventCard aspectRatio={heroAspectRatio} />
 
         {/* ── Primary action buttons ─────────────────── */}
         <View style={styles.actionRow}>
@@ -163,16 +183,19 @@ export default function HomeScreen() {
 
         {/* ── Quick-access grid ──────────────────────── */}
         <View style={styles.grid}>
-          <View style={styles.gridRow}>
-            {row1.map((item) => (
-              <QuickLinkTile key={item.key} item={item} />
-            ))}
-          </View>
-          <View style={[styles.gridRow, styles.gridRowCentered]}>
-            {row2.map((item) => (
-              <QuickLinkTile key={item.key} item={item} />
-            ))}
-          </View>
+          {rows.map((row, rowIdx) => (
+            <View
+              key={rowIdx}
+              style={[
+                styles.gridRow,
+                row.length < tileColumns && styles.gridRowCentered,
+              ]}
+            >
+              {row.map((item) => (
+                <QuickLinkTile key={item.key} item={item} tileSize={tileSize} />
+              ))}
+            </View>
+          ))}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -180,10 +203,8 @@ export default function HomeScreen() {
 }
 
 // ---------------------------------------------------------------------------
-// Styles
+// Styles — no hardcoded pixel dimensions for layout-sensitive properties
 // ---------------------------------------------------------------------------
-
-const TILE_SIZE = 88;
 
 const styles = StyleSheet.create({
   safe: {
@@ -194,13 +215,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingHorizontal: spacing.md,
     paddingBottom: spacing.xxl,
     gap: spacing.lg,
     paddingTop: spacing.md,
   },
 
-  // ── Hero card ──────────────────────────────────────
+  // ── Hero ──────────────────────────────────────────
   heroCard: {
     borderRadius: radius.lg,
     overflow: 'hidden',
@@ -209,7 +229,6 @@ const styles = StyleSheet.create({
   },
   heroImage: {
     width: '100%',
-    aspectRatio: 16 / 9,
     justifyContent: 'flex-end',
   },
   heroImageStyle: {
@@ -218,7 +237,6 @@ const styles = StyleSheet.create({
   heroOverlay: {
     ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0,0,0,0.45)',
-    borderRadius: radius.lg,
   },
   playButtonWrapper: {
     position: 'absolute',
@@ -264,9 +282,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     gap: spacing.xs,
   },
-  actionBtnIcon: {
-    marginRight: spacing.xs,
-  },
   actionBtnLabel: {
     ...typography.button,
   },
@@ -283,13 +298,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tile: {
-    width: TILE_SIZE,
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.xs,
   },
   tileIcon: {
-    width: TILE_SIZE,
-    height: TILE_SIZE,
     borderRadius: radius.lg,
     backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
